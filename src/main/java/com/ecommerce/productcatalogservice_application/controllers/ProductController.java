@@ -5,6 +5,10 @@ import com.ecommerce.productcatalogservice_application.dtos.ProductDto;
 import com.ecommerce.productcatalogservice_application.models.Product;
 import com.ecommerce.productcatalogservice_application.services.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -16,6 +20,9 @@ public class ProductController
 {
     @Autowired
     private IProductService productService;
+
+    @Autowired
+    private IProductService productService2;
     @GetMapping
     public List<Product> getAllProducts()
     {
@@ -28,10 +35,23 @@ public class ProductController
     }
 
     @GetMapping("/{id}")
-    public ProductDto findProductById(@PathVariable Long id)
-    {
-        Product product = productService.getProductById(id);
-        return from(product);
+    public ResponseEntity<ProductDto> findProductById(@PathVariable Long productId) {
+        try {
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
+            if (productId <= 0) {
+                headers.add("called by", "bhudwak");
+                //return new ResponseEntity<>(null, headers, HttpStatus.NOT_FOUND);
+                throw new IllegalArgumentException("Please try with productId > 0");
+            }
+
+            Product product = productService2.getProductById(productId);
+            headers.add("called by", "intelligent");
+            if (product == null) return new ResponseEntity<>(null, headers, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(from(product), headers, HttpStatus.OK);
+        } catch (IllegalArgumentException exception) {
+            throw exception;
+        }
     }
 
     private ProductDto from (Product product) {

@@ -3,8 +3,10 @@ package com.ecommerce.productcatalogservice_application.services;
 import com.ecommerce.productcatalogservice_application.models.Category;
 import com.ecommerce.productcatalogservice_application.models.Product;
 import com.ecommerce.productcatalogservice_application.dtos.FakeStoreProductDto;
+import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,8 +23,16 @@ public class FakeStoreProductService implements IProductService
     {
         RestTemplate restTemplate = restTemplateBuilder.build();
         //restTemplate.rootUri("http://fakestoreapi.com/");
-        FakeStoreProductDto fakeStoreProductDto = restTemplate.getForEntity("http://fakestoreapi.com/products/{productId}",FakeStoreProductDto.class,productId).getBody();
-        return from(fakeStoreProductDto);
+        ResponseEntity<FakeStoreProductDto> fakeStoreProductDtoResponseEntity = restTemplate.getForEntity("http://fakestoreapi.com/products/{productId}",FakeStoreProductDto.class,productId);
+
+        if(fakeStoreProductDtoResponseEntity.getStatusCode().equals(HttpStatusCode.valueOf(200)) && fakeStoreProductDtoResponseEntity.getBody()!=null)
+        {
+            return from(fakeStoreProductDtoResponseEntity.getBody());
+        }
+
+
+
+        return null;
     }
 
     private Product from(FakeStoreProductDto fakeStoreProductDto)
